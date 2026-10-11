@@ -1,0 +1,5 @@
+---
+- name: Install PostgreSQL on vm1
+  hosts: vm1
+  roles:
+    - postgres

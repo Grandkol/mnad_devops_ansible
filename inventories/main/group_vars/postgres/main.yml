@@ -1,0 +1,19 @@
+postgres__hba:
+  - { type: local, database: all, user: all, method: peer }
+  - { type: host, database: all, user: all, address: 127.0.0.1/32, method: scram-sha-256 }
+  - { type: host, database: all, user: all, address: "::1/128", method: scram-sha-256 }
+
+postgres__users:
+  - name: app
+    password: "{{ vault_postgres_app_password }}"
+  - name: analyst
+    password: "{{ vault_postgres_analyst_password }}"
+    role_attr_flags: LOGIN,CREATEDB
+
+postgres__databases:
+  - name: appdb
+    owner: app
+  - name: reports
+    owner: analyst
+
+postgres__exporter_password: "{{ vault_postgres_exporter_password }}"

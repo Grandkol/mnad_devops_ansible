@@ -1,0 +1,14 @@
+- name: Install Postgres packages
+  ansible.builtin.apt:
+    name:
+      - "postgresql-{{ postgres__version }}"
+      - python3-psycopg2
+      - acl
+    update_cache: true
+    state: present
+
+- name: Stop default cluster
+  ansible.builtin.systemd_service:
+    name: "postgresql@{{ postgres__version }}-main.service"
+    enabled: false
+    state: stopped

@@ -1,0 +1,83 @@
+- name: Create exporter role
+  community.postgresql.postgresql_user:
+    name: "{{ __exporter_user }}"
+    password: "{{ postgres__exporter_password }}"
+    login_port: "{{ __port }}"
+  become_user: postgres
+  no_log: true
+
+- name: Grant pg_monitor to exporter role
+  community.postgresql.postgresql_membership:
+    groups: pg_monitor
+    target_roles: "{{ __exporter_user }}"
+    login_port: "{{ __port }}"
+  become_user: postgres
+
+- name: Download exporter on controller
+  delegate_to: localhost
+  become: false
+  when: inventory_hostname == __first_host
+  block:
+    - name: Create download dir
+      ansible.builtin.file:
+        path: /tmp/postgres-exporter
+        mode: "777"
+        state: directory
+
+    - name: Download exporter
+      ansible.builtin.unarchive:
+        src: "{{ __exporter_url }}"
+        dest: /tmp/postgres-exporter
+        remote_src: true
+
+    - name: Find exporter executable
+      ansible.builtin.find:
+        paths: /tmp/postgres-exporter
+        file_type: file
+        patterns: "postgres_exporter"
+        recurse: true
+      register: __result
+
+    - name: Register path to executable
+      ansible.builtin.set_fact:
+        __executable_file_local: "{{ __result.files[0].path }}"
+
+- name: Propagate fact
+  ansible.builtin.set_fact:
+    __executable_file: "{{ hostvars[__first_host].__executable_file_local }}"
+
+- name: Copy exporter executable
+  ansible.builtin.copy:
+    src: "{{ __executable_file }}"
+    dest: /usr/local/sbin/postgres-exporter
+    mode: "755"
+  notify:
+    - Restart Postgres exporter
+
+- name: Copy exporter connection settings
+  ansible.builtin.template:
+    src: postgres_exporter.env.j2
+    dest: /etc/default/postgres-exporter
+    mode: "0600"
+    owner: root
+    group: root
+  no_log: true
+  notify:
+    - Restart Postgres exporter
+
+- name: Copy postgres-exporter systemd service
+  ansible.builtin.template:
+    src: postgres-exporter.service.j2
+    dest: /etc/systemd/system/postgres-exporter.service
+    mode: "644"
+    owner: root
+    group: root
+  notify:
+    - Daemon reload
+    - Restart Postgres exporter
+
+- name: Start postgres-exporter systemd service
+  ansible.builtin.systemd_service:
+    name: postgres-exporter.service
+    enabled: true
+    state: started

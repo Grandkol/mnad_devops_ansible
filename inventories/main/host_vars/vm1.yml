@@ -1,0 +1,6 @@
+postgres__opts:
+  listen_addresses: "'*'"
+  port: 5434
+  max_connections: 150
+  shared_buffers: 256MB
+  password_encryption: "'scram-sha-256'"

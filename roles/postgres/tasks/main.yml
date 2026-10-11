@@ -1,0 +1,20 @@
+- name: Configure Postgres
+  become: true
+  block:
+    - name: Install Postgres
+      ansible.builtin.import_tasks: install.yml
+
+    - name: Init cluster
+      ansible.builtin.import_tasks: cluster.yml
+
+    - name: Configure cluster
+      ansible.builtin.import_tasks: config.yml
+
+    - name: Start Postgres
+      ansible.builtin.import_tasks: service.yml
+
+    - name: Create users and databases
+      ansible.builtin.import_tasks: databases.yml
+
+    - name: Install exporter
+      ansible.builtin.import_tasks: exporter.yml

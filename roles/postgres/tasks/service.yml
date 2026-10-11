@@ -1,0 +1,29 @@
+- name: Copy postgres systemd service
+  ansible.builtin.template:
+    src: postgres.service.j2
+    dest: /etc/systemd/system/postgres.service
+    mode: "644"
+    owner: root
+    group: root
+  notify:
+    - Daemon reload
+    - Restart Postgres
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Start postgres systemd service
+  ansible.builtin.systemd_service:
+    name: postgres.service
+    enabled: true
+    state: started
+
+- name: Check Postgres
+  community.postgresql.postgresql_query:
+    query: SELECT 1
+    login_db: postgres
+    login_port: "{{ __port }}"
+  become_user: postgres
+  changed_when: false
+  retries: 6
+  delay: 5

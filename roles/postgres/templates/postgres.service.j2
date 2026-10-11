@@ -1,0 +1,17 @@
+{{ ansible_managed | comment }}
+[Unit]
+Description=PostgreSQL {{ postgres__version }} database server
+After=network.target
+
+[Service]
+Type=notify
+User=postgres
+Group=postgres
+ExecStart={{ __bin_dir }}/postgres -D {{ postgres__data_dir }}
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGINT
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

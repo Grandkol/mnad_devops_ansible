@@ -1,0 +1,17 @@
+postgres__version: 14
+postgres__data_dir: /data/postgres/data
+
+postgres__opts:
+  listen_addresses: "'localhost'"
+  port: 5432
+
+postgres__hba:
+  - { type: local, database: all, user: all, method: peer }
+  - { type: host, database: all, user: all, address: 127.0.0.1/32, method: scram-sha-256 }
+
+postgres__databases: []
+postgres__users: []
+
+postgres__exporter_version: "0.17.1"
+postgres__exporter_port: 9187
+postgres__exporter_password: ""

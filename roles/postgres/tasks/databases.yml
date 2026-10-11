@@ -1,0 +1,22 @@
+- name: Create users
+  community.postgresql.postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password | default(omit) }}"
+    role_attr_flags: "{{ item.role_attr_flags | default(omit) }}"
+    login_port: "{{ __port }}"
+  loop: "{{ postgres__users }}"
+  loop_control:
+    label: "{{ item.name }}"
+  become_user: postgres
+  no_log: true
+
+- name: Create databases
+  community.postgresql.postgresql_db:
+    name: "{{ item.name }}"
+    owner: "{{ item.owner | default(omit) }}"
+    encoding: "{{ item.encoding | default(omit) }}"
+    login_port: "{{ __port }}"
+  loop: "{{ postgres__databases }}"
+  loop_control:
+    label: "{{ item.name }}"
+  become_user: postgres

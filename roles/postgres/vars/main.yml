@@ -1,0 +1,6 @@
+__bin_dir: "/usr/lib/postgresql/{{ postgres__version }}/bin"
+__port: "{{ postgres__opts.port | default(5432) }}"
+__first_host: "{{ ansible_play_hosts_all | sort | first }}"
+__exporter_user: postgres_exporter
+__exporter_url: >-
+  https://github.com/prometheus-community/postgres_exporter/releases/download/v{{ postgres__exporter_version }}/postgres_exporter-{{ postgres__exporter_version }}.linux-amd64.tar.gz
